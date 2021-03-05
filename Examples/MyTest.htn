@@ -1,0 +1,143 @@
+/* 条件判断 */
+have-taxi-fare(?distance) :- have-cash(?m), >=(?m, +(1.5, ?distance)).
+walking-distance(?u,?v) :- weather-is(good), before(?u,?v,?w), =<(?w, 10).
+walking-distance(?u,?v) :- before(?u,?v,?w), =<(?w, 0.5).
+
+/* Methods */
+pay-driver(?fare) :- if(have-cash(?m), >=(?m, ?fare)),
+                                do(set-cash(?m, -(?m,?fare))).
+travel-to(?q) :- if(at(?p), walking-distance(?p, ?q)),
+                                do(walk(?p, ?q)).
+/* Use first() so we only hail one taxi */
+travel-to(?y) :- if(first(at(?x), at-taxi-stand(?t, ?x), before(?x, ?y, ?d), have-taxi-fare(?d))), do(hail(?t,?x), ride(?t, ?x, ?y), pay-driver(+(1.50, ?d))).
+travel-to(?y) :- if(at(?x), bus-route(?bus, ?x, ?y)), do(wait-for(?bus, ?x), pay-driver(1.00), ride(?bus, ?x, ?y)).
+
+/* ============ 编制规划系列 ============== */
+/* 师级编制规划 一个师级指挥部 三个团 */
+division-level-model(?num) :- if(true),do(create-organization(shi),create-wireless-network(vhf),
+                                            creat-command-platform(3),regimental-level-model(),
+                                            regimental-level-model(),regimental-level-model()).
+/* 团级编制规划  */
+regimental-level-model() :- if(true),do(create-organization(tuan),create-wireless-network(wlan),
+                                            creat-command-platform(2),battalion-level-model(),
+                                            battalion-level-model(),battalion-level-model(),
+                                            create-dataflow()).
+/* 营级编制规划  */
+battalion-level-model() :- if(true),do(create-organization(ying),create-wireless-network(hf),
+                                        creat-command-platform(1),company-level-model(),
+                                        company-level-model(),company-level-model(),create-dataflow()).
+/* 连级编制规划  */
+company-level-model() :- if(true),do(create-organization(lian),create-wireless-network(vhf),
+                                        create-platform(p1),create-platform(p1),create-platform(p1),
+                                        create-platform(p1),create-dataflow()).
+/* 新生成编制 */
+create-organization(?level) :- if(current-organization(?shi,?tuan,?ying,?lian,?che),==(level,shi)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,
+                                                                +(?shi,1),?tuan,?ying,?lian,?che)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,tuan)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,+(?tuan,1),?ying,?lian,?che)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,ying)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,+(?ying,1),?lian,?che)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,lian)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,?ying,+(?lian,1),?che)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,che)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,?ying,?lian,+(?che,1))).
+
+/* 创建不同级别的指挥车*/
+creat-command-platform(?level) :- if(==(?level,3)),do(create-platform(c1)).
+creat-command-platform(?level) :- else, if(==(?level,2)),do(create-platform(c2)).
+creat-command-platform(?level) :- else, if(==(?level,1)),do(create-platform(c1)).
+
+/* 创建平台车 不同类型*/
+/*create-platform() :- if(have-cash(?m), >=(?m, 5),car-res(?a)),do(add-car(?a,?m)).*/
+create-platform(?type) :- if(==(?type,c3)),do(add-c3(),load-equipments(?type)).
+create-platform(?type) :- else, if(==(?type,c2)),do(add-c2(),load-equipments(?type)).
+create-platform(?type) :- else, if(==(?type,c1)),do(add-c1(),load-equipments(?type)).
+create-platform(?type) :- else, if(==(?type,p1)),do(add-p1(),load-equipments(?type)).
+
+/* 创建设备 */
+load-equipments(?type):- if(==(?type,c3)),do(load-wlan-equipment(),load-wlan-equipment()).
+load-equipments(?type):- else, if(==(?type,c2)),do(load-vhf-equipment(),load-firewall-equipment()).
+load-equipments(?type):- else, if(==(?type,c1)),do(load-vhf-equipment(),load-firewall-equipment()).
+load-equipments(?type):- else, if(==(?type,p1)),do(load-hf-equipment(),load-vhf-equipment()).
+
+/* 组网 */
+create-wireless-network(?type):- if(have-network-res(?val,?type),>=(?val,1)),do(gen-wrieless-network(?type,?val)).
+gen-wrieless-network(?type,?val):- if(==(?type,vhf)),do(add-vhf-network(?val,+(?val,1))).
+gen-wrieless-network(?type,?val):- else, if(==(?type,hf)),do(add-hf-network(?val,+(?val,2))).
+gen-wrieless-network(?type,?val):- else, if(==(?type,wlan)),do(add-wlan-network(?val,+(?val,3))).
+/* 链路 */
+creat-link(?from,?to,?type):- .
+/* 业务 */
+create-dataflow():- if(true),do(add-data-flow()).
+/* ============= 分配资源 ============= */
+
+/* Operators */
+hail(?vehicle, ?location) :- del(), add(at(?vehicle, ?location)).
+wait-for(?bus, ?location) :- del(), add(at(?bus, ?location)).
+ride(?vehicle, ?a, ?b) :- del(at(?a), at(?vehicle, ?a)), add(at(?b), at(?vehicle, ?b)).
+set-cash(?old, ?new) :- del(have-cash(?old)), add(have-cash(?new)).
+walk(?here, ?there) :- del(at(?here)), add(at(?there)).
+add-car(?m,?n) :- del(car-res(?m)),add(car-res(?n)).
+
+
+/* 填充编制 */
+/* set-organization() :- do(add-platform-organization(-1,shi,tuan,ying,lian,che)).*/
+change-state(?state_before,?state_now):- del(at(?state_before)), add(at(?state_now)).
+/*添加车*/
+add-c3():- del(car-res(20)),add(car-res(20)).
+add-c2():- del(car-res(20)),add(car-res(20)).
+add-c1():- del(car-res(20)),add(car-res(20)).
+add-p1():- del(car-res(20)),add(car-res(20)).
+/* 装载设备 */
+load-wlan-equipment():- del(),add().
+load-vhf-equipment():- del(),add().
+load-hf-equipment():- del(),add().
+load-firewall-equipment():- del(),add().
+
+/* 新建网络 */
+add-vhf-network(?old,?val):-del(have-network-res(?old,vhf)),add(have-network-res(?val,vhf)).
+add-hf-network(?old,?val):-del(have-network-res(?old,hf)),add(have-network-res(?val,hf)).
+add-wlan-network(?old,?val):-del(have-network-res(?old,wlan)),add(have-network-res(?val,wlan)).
+/* 创建业务流 */
+add-data-flow():- del(),add().
+/* 写入编制 */
+add-platform-organization(?num,?shi,?tuan,?ying,?lian,?che):- del(),
+                           add(platform-organization(?num,?shi,?tuan,?ying,?lian,?che)).
+/* 写入编制计数器 */
+change-current-organization(?shi,?tuan,?ying,?lian,?che,?newshi,?newtuan,?newying,?newlian,?newche):-
+                            del(current-organization(?shi,?tuan,?ying,?lian,?che)),
+                            add(current-organization(?newshi,?newtuan,?newying,?newlian,?newche)).
+
+/* State */
+/*设置状态 即所谓领域知识 */
+before(state_init, state_1, 2).
+before(state_1, state_2, 8).
+before(state_2, state_3, 9).
+before(state_3, state_final, 6).
+
+at-taxi-stand(taxi1, state_0).
+at-taxi-stand(taxi2, state_0).
+
+bus-route(bus1, state_0, state_1).
+bus-route(bus2, state_0, state_2).
+bus-route(bus3, state_2, state_4).
+/* at表示当前状态 */
+at(state_init).
+/* 天气 */
+weather-is(good).
+/* 资金 */
+have-cash(50).
+/* 例如频率什么的 */
+have-network-res(100,vhf).
+have-network-res(50,hf).
+have-network-res(80,wlan).
+/* 车体资源 */
+car-res(20).
+/* 当前编制计数器 shi,tuan,ying,lian,che */
+current-organization(0,0,0,0,0).
+/* 当前车计数器*/
+current-platform-num(0).
+/* 存入每个车的编制 */
+platform-organization(-1,shi,tuan,ying,lian,che).
+/*定义关系*/

@@ -43,6 +43,7 @@ SUITE(HtnCompilerTests)
         CHECK(compiler->Compile(string() +
                                 "test(?A) :- if(true), do( foo(?A) ). \r\n"
                                 ));
+//        compiler->domain()->AllOperators()
         loops = compiler->FindLogicErrors(planner->goalResolver()->shared_from_this());
         CHECK(loops.size() == 1);
         result = (*loops.begin());
