@@ -118,7 +118,7 @@ bool cmdHelp(const string &which)
         // s = Short help
         fprintf(stdout, "\r\n"
                 "Type a Prolog query (preceeding variables with '?') \r\n"
-                "Process an HTN goal using 'goal(...terms...)'\r\n"
+                "Process an HTN goal using 'goals(...terms...)'\r\n"
                 "Process an HTN goal *and apply any state changes to your environment* 'apply(...terms...)'\r\n"
                 "/? for all commands help\r\n"
                 "/q to end.\r\n"

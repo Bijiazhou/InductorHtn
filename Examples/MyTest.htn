@@ -100,7 +100,7 @@ add-vhf-network(?old,?val):-del(have-network-res(?old,vhf)),add(have-network-res
 add-hf-network(?old,?val):-del(have-network-res(?old,hf)),add(have-network-res(?val,hf)).
 add-wlan-network(?old,?val):-del(have-network-res(?old,wlan)),add(have-network-res(?val,wlan)).
 /* 创建业务流 */
-add-data-flow():- del(),add().
+add-data-flow(?num,?newnum):- del(current-platform-num(?num)),add(current-platform-num(?newnum)).
 /* 写入编制 */
 add-platform-organization(?num,?shi,?tuan,?ying,?lian,?che):- del(),
                            add(platform-organization(?num,?shi,?tuan,?ying,?lian,?che)).
@@ -108,6 +108,8 @@ add-platform-organization(?num,?shi,?tuan,?ying,?lian,?che):- del(),
 change-current-organization(?shi,?tuan,?ying,?lian,?che,?newshi,?newtuan,?newying,?newlian,?newche):-
                             del(current-organization(?shi,?tuan,?ying,?lian,?che)),
                             add(current-organization(?newshi,?newtuan,?newying,?newlian,?newche)).
+
+test:- if(current-platform-num(?num)),do(add-data-flow(?num,+(?num,1))).
 
 /* State */
 /*设置状态 即所谓领域知识 */

@@ -1,0 +1,217 @@
+/* 条件判断 尚未完全添加*/
+
+/* Methods */
+/* ============ 编制规划系列 ============== */
+/* 根任务 */
+rootTask(?level):- if(==(?level,shi)),do(division-level-model()).
+rootTask(?level):- else, if(==(?level,tuan)),do(regimental-level-model()).
+rootTask(?level):- else, if(==(?level,ying)),do(battalion-level-model()).
+rootTask(?level):- else, if(==(?level,lian)),do(company-level-model()).
+
+/* 师级编制规划 一个师级指挥部 三个团 */
+division-level-model() :- if(true),do(create-organization(shi),create-wireless-network(vhf),
+                                            creat-command-platform(3),regimental-level-model(),
+                                            regimental-level-model(),regimental-level-model(),create-dataflow(shituan)).
+/* 团级编制规划  */
+regimental-level-model() :- if(true),do(create-organization(tuan),create-wireless-network(wlan),
+                                            creat-command-platform(2),battalion-level-model(),
+                                            battalion-level-model(),battalion-level-model(),
+                                            create-dataflow(tuanying)).
+/* 营级编制规划  */
+battalion-level-model() :- if(true),do(create-organization(ying),create-wireless-network(hf),
+                                        creat-command-platform(1),company-level-model(),
+                                        company-level-model(),company-level-model(),create-dataflow(yinglian)).
+/* 连级编制规划  */
+company-level-model() :- if(true),do(create-organization(lian),create-wireless-network(vhf),
+                                       creat-command-platform(0),create-platform(p1),
+                                       create-platform(p1),create-platform(p1),
+                                       create-platform(p1),create-dataflow(lianjian)).
+/* 新生成编制 */
+create-organization(?level) :- if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,shi)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,
+                                                                +(?shi,1),0,0,0,0)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,tuan)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,+(?tuan,1),0,0,0)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,ying)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,+(?ying,1),0,0)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,lian)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,?ying,+(?lian,1),0)).
+create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,che)),
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,?tuan,?ying,?lian,+(?che,1))).
+
+/* 创建不同级别的指挥车*/
+creat-command-platform(?level) :- if(==(?level,3)),do(create-platform(c3)).
+creat-command-platform(?level) :- else, if(==(?level,2)),do(create-platform(c2)).
+creat-command-platform(?level) :- else, if(==(?level,1)),do(create-platform(c1)).
+creat-command-platform(?level) :- else, if(==(?level,0)),do(create-platform(c0)).
+
+/* 创建平台车 不同类型*/
+create-platform(?type) :- if(==(?type,c3), current-platform-num(?num)),
+do(add-c3(),create-platform-id(?num,+(?num,1)),set-platform-organization(+(?num,1)),load-equipments(+(?num,1),?type)).
+create-platform(?type) :- else, if(==(?type,c2), current-platform-num(?num)),
+do(add-c2(), create-platform-id(?num,+(?num,1)),set-platform-organization(+(?num,1)),load-equipments(+(?num,1),?type)).
+create-platform(?type) :- else, if(==(?type,c1), current-platform-num(?num)),
+do(add-c1(), create-platform-id(?num,+(?num,1)),set-platform-organization(+(?num,1)),load-equipments(+(?num,1),?type)).
+create-platform(?type) :- else, if(==(?type,c0), current-platform-num(?num)),
+do(add-c0(), create-platform-id(?num,+(?num,1)),set-platform-organization(+(?num,1)),load-equipments(+(?num,1),?type)).
+create-platform(?type) :- else, if(==(?type,p1), current-platform-num(?num)),
+do(add-p1(), create-organization(che), create-platform-id(?num,+(?num,1)),set-platform-organization(+(?num,1)),load-equipments(+(?num,1),?type)).
+
+/* 为平台填充编制 */
+set-platform-organization(?num) :- if(current-organization(?shi,?tuan,?ying,?lian,?che)),
+                do(bind-id-organization(?num,?shi,?tuan,?ying,?lian,?che)).
+
+/* 创建设备 */
+load-equipments(?id,?type):- if(==(?type,c3)),do(load-wlan-equipment(?id),load-wlan-equipment(?id),load-vhf-equipment(?id),load-hf-equipment(?id)).
+load-equipments(?id,?type):- else, if(==(?type,c2)),do(load-wlan-equipment(?id),load-vhf-equipment(?id),load-hf-equipment(?id)).
+load-equipments(?id,?type):- else, if(==(?type,c1)),do(load-wlan-equipment(?id),load-wlan-equipment(?id),load-vhf-equipment(?id),load-vhf-equipment(?id)).
+load-equipments(?id,?type):- else, if(==(?type,c0)),do(load-wlan-equipment(?id),load-vhf-equipment(?id),load-hf-equipment(?id)).
+load-equipments(?id,?type):- else, if(==(?type,p1)),do(load-wlan-equipment(?id),load-vhf-equipment(?id),load-hf-equipment(?id),
+load-vhf-equipment(?id),load-hf-equipment(?id)).
+
+/* TODO 判断否可以组网 这里还有错 */
+create-wireless-network(?type):-
+if(have-network-res(?type,?val),network-res-max(?type,?max),default-bandwidth(?type,?width),network-count(?num),<=(+(?val,?width),?max)),
+do(change-network-count(?num,+(?num,1)),change-network-manager(+(?num,1),?type,?val,?width),gen-wrieless-network(?type,?val,+(?val,?width))).
+
+/* 生成网络 */
+gen-wrieless-network(?type,?val,?newval):- if(==(?type,vhf)),
+do(add-vhf-network(?val,?newval)).
+gen-wrieless-network(?type,?val,?newval):- else, if(==(?type,hf)),
+do(add-hf-network(?val,?newval)).
+gen-wrieless-network(?type,?val,?newval):- else, if(==(?type,wlan)),
+do(add-wlan-network(?val,?newval)).
+
+/* 链路 add link 相对复杂 得考虑平台本身的情况 待定 */
+creat-link(?from,?to,?type):- if(link-count(?num)),do(change-link-count(?num,+(?num,1)), change-link-manager(+(?num,1),?from,?to,?type)).
+
+/* 业务 待定*/
+create-dataflow(?type):- if(==(?type,shituan)),do(add-data-flow()).
+create-dataflow(?type):- else, if(==(?type,tuanjian)),do(add-data-flow()).
+create-dataflow(?type):- else, if(==(?type,tuanying)),do(add-data-flow()).
+create-dataflow(?type):- else, if(==(?type,yingjian)),do(add-data-flow()).
+create-dataflow(?type):- else, if(==(?type,yinglian)),do(add-data-flow()).
+create-dataflow(?type):- else, if(==(?type,lianjian)),do(add-data-flow()).
+
+/* 攻防业务 待定*/
+create-against-scenario(?type):- if(ture),do(add-against-scenario(?type)).
+
+/* ============= Operators ============= */
+
+/* Operators */
+/* 变更资金存量 */
+set-cash(?old, ?new) :- del(have-cash(?old)), add(have-cash(?new)).
+
+/* 变更当前状态 **工作流设想 state代表节点 */
+change-state(?state_before,?state_now):- del(at(?state_before)), add(at(?state_now)).
+
+/*添加车简化版本 暂时不涉及资源*/
+/* add-car(?m,?n) :- del(car-res(?m)),add(car-res(?n)). */
+add-c3():- del(),add().
+add-c2():- del(),add().
+add-c1():- del(),add().
+add-c0():- del(),add().
+add-p1():- del(),add().
+
+/* 装载设备 */
+load-wlan-equipment(?id):- del(),add().
+load-vhf-equipment(?id):- del(),add().
+load-hf-equipment(?id):- del(),add().
+load-firewall-equipment(?id):- del(),add().
+
+/* 更新网络资源计数器 */
+add-vhf-network(?val,?newval):-del(have-network-res(vhf,?val)),add(have-network-res(vhf,?newval)).
+add-hf-network(?val,?newval):-del(have-network-res(hf,?val)),add(have-network-res(hf,?newval)).
+add-wlan-network(?val,?newval):-del(have-network-res(wlan,?val)),add(have-network-res(wlan,?newval)).
+
+/* 更新网络管理器 */
+change-network-manager(?num,?type,?val,?width):- del(),add(network-manager(?num,?type,?val,?width)).
+
+/* 更新网络计数器 */
+change-network-count(?old,?new):- del(network-count(?old)),add(network-count(?new)).
+
+/* 更新链路管理器 */
+change-link-manager(?num,?from,?to,?type):- del(),add(link-manager(?num,?from,?to,?type)).
+
+/* 更新链路计数器 */
+change-link-count(?old,?new):- del(link-count(?old)),add(link-count(?new)).
+
+/* 创建业务流 */
+add-data-flow():- del(),add().
+
+/* 创建攻防场景*/
+add-against-scenario(?type):- del(),add().
+
+/* 写入编制计数器 */
+change-current-organization(?shi,?tuan,?ying,?lian,?che,?newshi,?newtuan,?newying,?newlian,?newche):-
+                            del(current-organization(?shi,?tuan,?ying,?lian,?che)),
+                            add(current-organization(?newshi,?newtuan,?newying,?newlian,?newche)).
+/* 创建平台ID */
+create-platform-id(?num,?newnum):- del(current-platform-num(?num)),add(current-platform-num(?newnum)).
+
+/* 为平台ID绑定编制 */
+bind-id-organization(?num,?shi,?tuan,?ying,?lian,?che):- del(),add(platform-organization(?num,?shi,?tuan,?ying,?lian,?che)).
+
+
+/* State */
+
+/*设置工作流状态 即所谓世界状态 */
+before(state_init, state_1).
+before(state_1, state_2).
+before(state_2, state_3).
+before(state_3, state_final).
+
+/* at表示当前状态 */
+at(state_init).
+
+/* 资金 */
+have-cash(5000).
+
+/* 网络频段资源  起点*/
+have-network-res(vhf,100).
+have-network-res(hf,50).
+have-network-res(wlan,80).
+
+/*  网络频段资源  终点*/
+network-res-max(vhf,500).
+network-res-max(hf,500).
+network-res-max(wlan,800).
+
+/* 默认频宽 */
+default-bandwidth(vhf,0.2).
+default-bandwidth(hf,0.1).
+default-bandwidth(wlan,0.1).
+
+/* 网络资源管理器*/
+network-manager(-1,type,val,bandwitdh).
+
+/* 网络计数器 */
+network-count(-1).
+
+/* 链路管理器 */
+link-manager(-1,from,to,type).
+
+/* 链路计数器 */
+link-count(-1).
+
+/* 车体资源 */
+car-res(c3,100).
+car-res(c2,200).
+car-res(c1,400).
+car-res(c0,600).
+car-res(p1,1000).
+
+/* 设备资源 */
+device-res(vhf,3000).
+device-res(hf,3000).
+device-res(wlan,3000).
+device-res(firewall,3000).
+
+/* 当前编制计数器 shi,tuan,ying,lian,che */
+current-organization(0,0,0,0,0).
+
+/* 当前平台计数器*/
+current-platform-num(-1).
+
+/* 存入每个车的编制 */
+platform-organization(-1,shi,tuan,ying,lian,che).
