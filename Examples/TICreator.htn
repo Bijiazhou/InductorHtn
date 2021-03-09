@@ -28,8 +28,7 @@ company-level-model() :- if(true),do(create-organization(lian),create-wireless-n
                                        create-platform(p1),create-dataflow(lianjian)).
 /* 新生成编制 */
 create-organization(?level) :- if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,shi)),
-                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,
-                                                                +(?shi,1),0,0,0,0)).
+                                do(change-current-organization(?shi,?tuan,?ying,?lian,?che,+(?shi,1),0,0,0,0)).
 create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,tuan)),
                                 do(change-current-organization(?shi,?tuan,?ying,?lian,?che,?shi,+(?tuan,1),0,0,0)).
 create-organization(?level) :- else, if(current-organization(?shi,?tuan,?ying,?lian,?che),==(?level,ying)),
@@ -69,9 +68,9 @@ load-equipments(?id,?type):- else, if(==(?type,c0)),do(load-wlan-equipment(?id),
 load-equipments(?id,?type):- else, if(==(?type,p1)),do(load-wlan-equipment(?id),load-vhf-equipment(?id),load-hf-equipment(?id),
 load-vhf-equipment(?id),load-hf-equipment(?id)).
 
-/* TODO 判断否可以组网 这里还有错 */
+/* 判断否可以组网 */
 create-wireless-network(?type):-
-if(have-network-res(?type,?val),network-res-max(?type,?max),default-bandwidth(?type,?width),network-count(?num),<=(+(?val,?width),?max)),
+if(have-network-res(?type,?val),network-res-max(?type,?max),default-bandwidth(?type,?width),network-count(?num),=<(+(?val,?width),?max)),
 do(change-network-count(?num,+(?num,1)),change-network-manager(+(?num,1),?type,?val,?width),gen-wrieless-network(?type,?val,+(?val,?width))).
 
 /* 生成网络 */
