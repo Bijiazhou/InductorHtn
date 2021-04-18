@@ -7,7 +7,8 @@ project(IndHtn CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_executable(runtests TestsMain.cpp)
+add_executable(HtnSolutionParser Tests/Htn/HtnSolutionParser.cpp)
+add_executable(runtests TestsMain.cpp )
 # this allows us to use our executable as a link library
 # therefore we can inherit all compiler options and library dependencies
 set_target_properties(runtests PROPERTIES ENABLE_EXPORTS on)
